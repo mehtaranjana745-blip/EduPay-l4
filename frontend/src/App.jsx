@@ -57,21 +57,20 @@ function App() {
     initWalletKit();
   }, []);
 
-  // Fetch balance and payments when address is set
+  // Fetch balance and payments when address or view changes
   useEffect(() => {
     if (userAddress) {
       reloadBalance();
       loadPayments();
-      // Poll for active payment status updates from the contract state every 7 seconds
       const interval = setInterval(() => {
         loadPayments();
-      }, 7000);
+      }, 5000);
       return () => clearInterval(interval);
     } else {
       setBalance(0);
       setPayments([]);
     }
-  }, [userAddress]);
+  }, [userAddress, view]);
 
   const reloadBalance = async () => {
     if (!userAddress) return;
@@ -88,8 +87,12 @@ function App() {
     setIsLoadingPayments(true);
     try {
       const stored = localStorage.getItem(`edupay_ids_${userAddress}`);
-      const knownIds = stored ? JSON.parse(stored) : [];
-      const list = await getAllPaymentsForUser(userAddress, knownIds);
+      const platformStored = localStorage.getItem("edupay_platform_all_payments");
+      const userIds = stored ? JSON.parse(stored) : [];
+      const platformIds = platformStored ? JSON.parse(platformStored) : [];
+      const knownIds = Array.from(new Set([...userIds, ...platformIds]));
+
+      const list = await getAllPaymentsForUser(userAddress, knownIds, view === "admin");
       setPayments(list);
     } catch (err) {
       console.error("Failed to load payments:", err);
@@ -158,12 +161,19 @@ function App() {
       setTxStatus({ step: "create", status: "submitting", hash: "", error: "" });
       const { hash } = await submitTx(signedXdr);
 
-      // Save payment ID to local list
+      // Save payment ID to user list and platform list
       const stored = localStorage.getItem(`edupay_ids_${userAddress}`);
       const list = stored ? JSON.parse(stored) : [];
       if (!list.includes(paymentId)) {
         list.push(paymentId);
         localStorage.setItem(`edupay_ids_${userAddress}`, JSON.stringify(list));
+      }
+
+      const pStored = localStorage.getItem("edupay_platform_all_payments");
+      const pList = pStored ? JSON.parse(pStored) : [];
+      if (!pList.includes(paymentId)) {
+        pList.push(paymentId);
+        localStorage.setItem("edupay_platform_all_payments", JSON.stringify(pList));
       }
 
       posthog.capture("payment_created", { paymentId, amount, term, university: targetUni });
@@ -201,11 +211,18 @@ function App() {
       setTxStatus({ step: "deposit", status: "submitting", hash: "", error: "" });
       const { hash } = await submitTx(signedXdr);
 
+      const pStored = localStorage.getItem("edupay_platform_all_payments");
+      const pList = pStored ? JSON.parse(pStored) : [];
+      if (!pList.includes(paymentId)) {
+        pList.push(paymentId);
+        localStorage.setItem("edupay_platform_all_payments", JSON.stringify(pList));
+      }
+
       posthog.capture("payment_escrowed", { paymentId, amount });
       setTxStatus({ step: "deposit", status: "success", hash, error: "" });
 
-      await loadPayments();
       await reloadBalance();
+      await loadPayments();
     } catch (err) {
       console.error(err);
       setTxStatus({ step: "deposit", status: "error", hash: "", error: err.message });
