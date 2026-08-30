@@ -421,7 +421,7 @@ function App() {
               <div className="glass-panel" style={{ padding: "2rem" }}>
                 <div className="card-title-section">
                   <h3>University / Contract Administrator Escrow Hub</h3>
-                  <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>Logged in as University/Admin</span>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>Logged in as Authorized University Agent</span>
                 </div>
                 
                 <div className="payments-table-container">
