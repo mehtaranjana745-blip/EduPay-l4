@@ -110,20 +110,28 @@ The table below highlights real on-chain transaction hashes executed on Stellar 
 ## 📸 Visual Evidence & Screenshots Gallery
 
 ### 1. Product UI (Desktop dApp & Escrow Hub)
-![Product UI](./screenshots/product-ui.png)
+![Product UI](image.png)
 *Desktop student interface showing 1-click escrow creation, deposit panel, and real-time payment status tracking.*
 
 ### 2. Mobile Responsive UI (Smartphone Viewport)
-![Mobile Responsive UI](./screenshots/mobile-ui.png)
+![Mobile Responsive UI](image-1.png)
 *Fully responsive mobile layout optimized for 375px+ screens with touch-friendly controls and adaptive modals.*
 
 ### 3. Analytics Dashboard (Real Usage Data & 73 User Responses)
-![Analytics Dashboard](./screenshots/analytics-growth.png)
+![Analytics Dashboard](image-2.png)
 *Live Google Sheets response export and analytics telemetry showing 73 active testnet user submissions and 4.9/5 satisfaction.*
 
 ### 4. Stellar Explorer Transaction List (Multiple Real On-Chain Tx Hashes)
-![Stellar Explorer Transactions](./screenshots/stellar-explorer.png)
+![Stellar Explorer Transactions](image-6.png)
 *Stellar.Expert ledger records confirming verified Soroban contract executions (`create_payment`, `deposit`, `release_payment`).*
+
+### 5. CI/CD Workflow
+![CI/CD Workflow](image-4.png)
+*Automated GitHub Actions pipeline running Soroban smart contract tests and React build verification.*
+
+### 6. Test Pass
+![Test Pass](image-5.png)
+*100% passing Rust Soroban smart contract unit tests (`cargo test`) and frontend production build verification.*
 
 ---
 
