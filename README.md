@@ -14,7 +14,7 @@ EduPay is a production-ready decentralized cross-border tuition fee escrow platf
 | 2 | **Deployed Soroban Escrow Smart Contract** | ✅ **DONE** | [`CA36B6...`](https://stellar.expert/explorer/testnet/contract/CA36B6GWEQKEFMYQR73HKEIBJPWSHH4TGO3VPBJ5PMVY4VK6WAIGBU3S) |
 | 3 | **Smart Contract Automated Unit Tests** | ✅ **DONE** | 3 passing unit tests in [`contracts/escrow/src/test.rs`](./contracts/escrow/src/test.rs) |
 | 4 | **Working Demo Video (Full Flow)** | ✅ **DONE** | [Watch Demo Video](https://photos.app.goo.gl/3KumqSYYd6D9uR9m6) |
-| 5 | **Pitch Deck (PPT Presentation)** | ✅ **DONE** | [View Pitch Deck Slides](<YOUR_PITCH_DECK_LINK>) |
+| 5 | **Pitch Deck (PPT Presentation)** | ✅ **DONE** | [View EduPay Pitch Deck (PITCH_DECK.md)](./PITCH_DECK.md) |
 | 6 | **50+ Real User Onboarding** | ✅ **DONE** | **73 Unique Users** ([`users_testnet_73.csv`](./users_testnet_73.csv)) |
 | 7 | **User Feedback Survey & Response Sheet** | ✅ **DONE** | [Feedback Sheet](https://docs.google.com/spreadsheets/d/16N1H6TOISQ1p0tvwBxnVUIedQOKXRBvzGxEjeM8vOE4/edit?usp=sharing) & [Google Form](https://docs.google.com/forms/d/1YlTWD3d9XNmsSQxapl0-B5Mebk6TbWkaX5bvBFEllsU/edit) |
 | 8 | **Real On-Chain Transaction Activity** | ✅ **DONE** | Verified hashes (e.g. [`c22e6feb...`](https://stellar.expert/explorer/testnet/tx/c22e6febf9a52fa68e14a8be514b277c587dfa869421062df2033161e0f6e4b5)) on Stellar.Expert |
@@ -40,8 +40,8 @@ EduPay is a production-ready decentralized cross-border tuition fee escrow platf
 
 ## 📊 Pitch Deck
 
-- **Pitch Deck Link (PPT / Slides):** [View Pitch Deck Slides](<YOUR_PITCH_DECK_LINK>) *(Paste your Google Slides / Canva / PDF link here)*
-- *Covers problem statement, solution, market opportunity, architecture, growth strategy, and future roadmap.*
+- **Pitch Deck (10-Slide Deck):** [View EduPay Pitch Deck Presentation (PITCH_DECK.md)](./PITCH_DECK.md)
+- *Covers Problem Statement, Solution, Market Opportunity ($100B+ TAM), Product Architecture, Growth Strategy (73+ Onboarded Users), Business Model, and Level 6 Roadmap.*
 
 ---
 
