@@ -31,3 +31,69 @@ pub enum DataKey {
 
 #[contract]
 pub struct EduPayEscrow;
+
+#[contractimpl]
+impl EduPayEscrow {
+    pub fn initialize(env: Env, admin: Address) {
+        if env.storage().instance().has(&DataKey::Admin) {
+            panic!("already initialized");
+        }
+        env.storage().instance().set(&DataKey::Admin, &admin);
+    }
+
+    pub fn set_token(env: Env, token: Address) {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).expect("not initialized");
+        admin.require_auth();
+        env.storage().instance().set(&DataKey::Token, &token);
+    }
+
+    pub fn get_token(env: Env) -> Address {
+        env.storage().instance().get(&DataKey::Token).expect("token not set")
+    }
+
+    pub fn create_payment(
+        env: Env,
+        payment_id: Symbol,
+        student: Address,
+        university: Address,
+        amount: i128,
+        term: String,
+    ) {
+        student.require_auth();
+
+        let payment_key = DataKey::Payment(payment_id.clone());
+        if env.storage().persistent().has(&payment_key) {
+            panic!("payment already exists");
+        }
+
+        let record = PaymentRecord {
+            student: student.clone(),
+            university: university.clone(),
+            amount,
+            term,
+            status: PaymentStatus::Deposited,
+        };
+
+        env.storage().persistent().set(&payment_key, &record);
+
+        // Add payment to student's history
+        let student_key = DataKey::UserPayments(student.clone());
+        let mut student_payments: Vec<Symbol> = env
+            .storage()
+            .persistent()
+            .get(&student_key)
+            .unwrap_or(Vec::new(&env));
+        student_payments.push_back(payment_id.clone());
+        env.storage().persistent().set(&student_key, &student_payments);
+
+        // Add payment to university's history
+        let uni_key = DataKey::UserPayments(university.clone());
+        let mut uni_payments: Vec<Symbol> = env
+            .storage()
+            .persistent()
+            .get(&uni_key)
+            .unwrap_or(Vec::new(&env));
+        uni_payments.push_back(payment_id);
+        env.storage().persistent().set(&uni_key, &uni_payments);
+    }
+}
