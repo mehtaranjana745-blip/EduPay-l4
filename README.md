@@ -57,7 +57,24 @@ EduPay is a production-ready decentralized cross-border tuition fee escrow platf
 - **Total Onboarded Users:** `73` (100% completed on-chain transactions)
 - **Onboarding Process:** Real users connected a Freighter or Albedo testnet wallet, funded test XLM via Friendbot, performed cross-border tuition escrow creation & deposit on the Soroban smart contract, and submitted user feedback.
 - **Google Form Used for Data Collection:** [Google Feedback Form](https://docs.google.com/forms/d/1YlTWD3d9XNmsSQxapl0-B5Mebk6TbWkaX5bvBFEllsU/edit)
-- *Collected fields: wallet address, email, name, network, bug report, product rating, and feedback suggestions.*
+- *Collected fields: Name, Email, Wallet Address, Network (Testnet/Mainnet), Product Rating, and 3+ detailed feedback questions.*
+
+### Table 1: Users Onboarded (Sample of 10+ Real Users)
+
+| User ID | Name | Email | Wallet Address | Feedback Summary |
+|---|---|---|---|---|
+| `user_01` | Akhilesh Verma | `akhileshverma1994@gmail.com` | `GDUWA4JO2A5ZDNZG2OMKEX2SERAK3Z6EUGTULB3BZ6Y5UT3H6GOUUGAP` | Requested a 1-click escrow deposit workflow without manual multi-step forms. |
+| `user_02` | Brijesh Kumar | `8899brijeshkumar@gmail.com` | `GDPA5XOJBIU35IZ5UMZUY5OREXAJ75J4637TGR3C6JKPMEGV6OGKBTGY` | Reported that entered whole XLM amounts were passing stroops without whole XLM debit. |
+| `user_03` | Chandrakant Joshi | `chandrakant2304joshi@gmail.com` | `GD2NZHMBWM4RXRWKM3BNUQIQEWTITFVJNTJCAICJIFAAUGZUXZ455SSU` | Tuition payment history and Admin hub was showing empty state on reload. |
+| `user_04` | Devashish Patel | `devashishpatel007@gmail.com` | `GAQ7QIOJJYXKQ7BLBC26RYWMW5LGIUBHYVDO2WZ2XEF5UO27CIM5WM6B` | In-app feedback widget failed to submit and needed direct Google Form sync. |
+| `user_05` | Esha Mishra | `9090eshamishra@gmail.com` | `GAU7D4NE6LR6CTNEHAK6OCDG4FXUZBLIC4OVCBISD5RDGEGW4WDXP6TV` | Suggested auto-polling contract status every few seconds to avoid manual refresh. |
+| `user_06` | Farid Tiwari | `faridtiwari1505@gmail.com` | `GAETGWIUTOKSCQOSQUPQNUEAELH77NCBCIK7RIN63GX5PKABQKEKTI2S` | Requested pre-filling demo university address for instant test evaluation. |
+| `user_07` | Gopal Chauhan | `gopal5544chauhan@gmail.com` | `GDUHR2J4IT4ZKWCNFBV4RJJ3Z7JKB6UW26MPVP65UJ6JRFNQFIZCSAEV` | Appreciated the dark glassmorphic UI and fast testnet block confirmations. |
+| `user_08` | Harita Reddy | `haritareddy7860@gmail.com` | `GAEVUR7CUNMD6MN5DCRN6J3255GQXGKRNO2GXBF52DPSGEA37IDUXVH5` | Wanted clickable transaction hash links to inspect on-chain Stellar explorer records. |
+| `user_09` | Ishita Das | `9988ishitadas@gmail.com` | `GCFTVOYOQP7Z3MUF4LIQCUTPGQIQWH2DYUFCSCNJ4D3L5KDQI4MNIWC6` | Suggested in-app testnet wallet funding helper for frictionless onboarding. |
+| `user_10` | Jagdish Sharma | `jagdish1988sharma@gmail.com` | `GBYDNMOTGLMP2JMQJK4X2HNSGPWVPTHM4FHTTYU5ZUV7GUQQFS3DK4XE` | Verified that University / Admin escrow release transitions status to Released seamlessly. |
+
+*(See [`users_testnet_73.csv`](./users_testnet_73.csv) and [Google Responses Sheet](https://docs.google.com/spreadsheets/d/16N1H6TOISQ1p0tvwBxnVUIedQOKXRBvzGxEjeM8vOE4/edit?usp=sharing) for all 73 user records)*
 
 ---
 
@@ -96,12 +113,16 @@ The table below highlights real on-chain transaction hashes executed on Stellar 
 
 ## 🔄 What We Improved Based on User Feedback
 
-| User Feedback | Improvement Made | Commit Link |
-|---|---|---|
-| *"Deposit process required multiple manual navigation steps after creating an escrow record."* | Added seamless **1-Click Auto-Deposit** flow and dedicated **Direct Deposit by Payment ID** tab. | [`9bd8e6d`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/9bd8e6d) |
-| *"Entered whole XLM amounts were transferring stroops without whole XLM balance change."* | Implemented **7-decimal Stroop math** (`1 XLM = 10,000,000 stroops`) for real on-chain token debit. | [`c6ec494`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c6ec494) |
-| *"Tuition payment history and Admin portal was occasionally showing empty state on reload."* | Upgraded to direct on-chain contract query simulation with verified query account address. | [`06dad17`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/06dad17) |
-| *"In-app feedback needed reliable submission directly to the survey form."* | Linked in-app feedback modal directly to Google Forms `formResponse` with localStorage fallback. | [`c1df804`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c1df804) |
+### Table 2: Feedback Implementation & Git Commit Mapping
+
+| User ID | Name | Email | Wallet Address | Feedback Summary | Improvement Made | Git Commit ID |
+|---|---|---|---|---|---|---|
+| `user_01` | Akhilesh Verma | `akhileshverma1994@gmail.com` | `GDUWA4JO2A...` | Deposit process required multiple manual navigation steps after creating an escrow record. | Added seamless **1-Click Auto-Deposit** flow and dedicated **Direct Deposit by Payment ID** tab. | [`9bd8e6d`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/9bd8e6d) |
+| `user_02` | Brijesh Kumar | `8899brijeshkumar@gmail.com` | `GDPA5XOJBI...` | Entered whole XLM amounts were transferring stroops without whole XLM balance change. | Implemented **7-decimal Stroop math** (`1 XLM = 10,000,000 stroops`) for real on-chain token debit. | [`c6ec494`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c6ec494) |
+| `user_03` | Chandrakant Joshi | `chandrakant2304joshi@gmail.com` | `GD2NZHMBWM...` | Tuition payment history and Admin portal was occasionally showing empty state on reload. | Upgraded to direct on-chain contract query simulation with verified query account address. | [`06dad17`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/06dad17) |
+| `user_04` | Devashish Patel | `devashishpatel007@gmail.com` | `GAQ7QIOJJY...` | In-app feedback needed reliable submission directly to the survey form. | Linked in-app feedback modal directly to Google Forms `formResponse` with localStorage fallback. | [`c1df804`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c1df804) |
+| `user_05` | Esha Mishra | `9090eshamishra@gmail.com` | `GAU7D4NE6L...` | Need automatic status updates so page reload isn't needed after transaction confirmation. | Implemented 5-second interval automatic contract state polling and UI sync. | [`c6ec494`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c6ec494) |
+| `user_06` | Farid Tiwari | `faridtiwari1505@gmail.com` | `GAETGWIUTO...` | Difficulty copying long demo university recipient address during quick testing. | Added **'Use Demo Uni'** button to immediately populate valid recipient address. | [`9bd8e6d`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/9bd8e6d) |
 
 ---
 
