@@ -203,4 +203,42 @@ impl EduPayEscrow {
             (record.student.clone(), record.amount),
         );
     }
+
+    pub fn get_payment_status(env: Env, payment_id: Symbol) -> PaymentStatus {
+        let payment_key = DataKey::Payment(payment_id);
+        let record: PaymentRecord = env
+            .storage()
+            .persistent()
+            .get(&payment_key)
+            .expect("payment does not exist");
+        record.status
+    }
+
+    pub fn get_payment_record(env: Env, payment_id: Symbol) -> PaymentRecord {
+        let payment_key = DataKey::Payment(payment_id);
+        env.storage()
+            .persistent()
+            .get(&payment_key)
+            .expect("payment does not exist")
+    }
+
+    pub fn get_all_payments_for_user(env: Env, user: Address) -> Vec<PaymentRecord> {
+        let user_key = DataKey::UserPayments(user);
+        let payment_ids: Vec<Symbol> = env
+            .storage()
+            .persistent()
+            .get(&user_key)
+            .unwrap_or(Vec::new(&env));
+
+        let mut records = Vec::new(&env);
+        for payment_id in payment_ids.iter() {
+            let record: PaymentRecord = env
+                .storage()
+                .persistent()
+                .get(&DataKey::Payment(payment_id))
+                .unwrap();
+            records.push_back(record);
+        }
+        records
+    }
 }
