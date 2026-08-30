@@ -481,7 +481,7 @@ function App() {
         <div className="modal-overlay">
           <div className="glass-panel modal-content">
             <div className="modal-header">
-              <h3>Submit User Feedback</h3>
+              <h3>Share Your EduPay Experience</h3>
               <button className="modal-close" onClick={() => setShowFeedbackModal(false)}>&times;</button>
             </div>
             <form onSubmit={submitFeedback}>
