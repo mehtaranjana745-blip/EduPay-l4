@@ -1,5 +1,6 @@
 # EduPay 🎓
 
+[![CI/CD Build & Test](https://github.com/mehtaranjana745-blip/EduPay-l4/actions/workflows/ci.yml/badge.svg)](https://github.com/mehtaranjana745-blip/EduPay-l4/actions)
 > **Status:** Level 5 — Blue Belt (User Growth & Iteration)
 
 EduPay is a production-ready decentralized cross-border tuition fee escrow platform built on **Stellar Testnet** using **Soroban Smart Contracts (Rust)** and **React (Vite)**. It protects international students and universities by holding tuition payments in cryptographic escrow until admission milestones are verified.
@@ -19,8 +20,9 @@ EduPay is a production-ready decentralized cross-border tuition fee escrow platf
 | 7 | **User Feedback Survey & Response Sheet** | ✅ **DONE** | [Feedback Sheet](https://docs.google.com/spreadsheets/d/16N1H6TOISQ1p0tvwBxnVUIedQOKXRBvzGxEjeM8vOE4/edit?usp=sharing) & [Google Form](https://docs.google.com/forms/d/1YlTWD3d9XNmsSQxapl0-B5Mebk6TbWkaX5bvBFEllsU/edit) |
 | 8 | **Real On-Chain Transaction Activity** | ✅ **DONE** | Verified hashes (e.g. [`c22e6feb...`](https://stellar.expert/explorer/testnet/tx/c22e6febf9a52fa68e14a8be514b277c587dfa869421062df2033161e0f6e4b5)) on Stellar.Expert |
 | 9 | **Feedback-Driven Iterations & Fixes** | ✅ **DONE** | 4 major fixes with Git commits ([`9bd8e6d`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/9bd8e6d), [`c6ec494`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c6ec494), [`06dad17`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/06dad17), [`c1df804`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c1df804)) |
-| 10 | **20+ Meaningful Git Commits** | ✅ **DONE** | **25+ Commits** ([GitHub Commit History](https://github.com/mehtaranjana745-blip/EduPay-l4/commits/main)) |
-| 11 | **User Telemetry & Error Tracking** | ✅ **DONE** | Integrated PostHog & Sentry in frontend code |
+| 10 | **20+ Meaningful Git Commits** | ✅ **DONE** | **28+ Commits** ([GitHub Commit History](https://github.com/mehtaranjana745-blip/EduPay-l4/commits/main)) |
+| 11 | **Automated CI/CD Workflow** | ✅ **DONE** | [GitHub Actions Workflow (.github/workflows/ci.yml)](.github/workflows/ci.yml) |
+| 12 | **User Telemetry & Error Tracking** | ✅ **DONE** | Integrated PostHog & Sentry in frontend code |
 
 ---
 
