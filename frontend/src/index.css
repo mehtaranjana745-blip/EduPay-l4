@@ -455,4 +455,20 @@ h1, h2, h3, h4, h5, h6 {
   padding: 1.25rem;
   background: rgba(124, 58, 237, 0.05);
   margin-bottom: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+.helper-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.02); }
+}
+
+.status-badge.status-escrowed {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
