@@ -137,6 +137,11 @@ function App() {
     }
   };
 
+  const [autoDeposit, setAutoDeposit] = useState(true);
+  const [directDepositId, setDirectDepositId] = useState("");
+  const [directDepositAmount, setDirectDepositAmount] = useState("");
+  const [activeFormTab, setActiveFormTab] = useState("create"); // 'create' or 'deposit'
+
   const handleCreatePayment = async (e) => {
     e.preventDefault();
     if (!userAddress) return;
@@ -165,6 +170,12 @@ function App() {
       setTxStatus({ step: "create", status: "success", hash, error: "" });
 
       await loadPayments();
+
+      // If Auto Deposit is enabled, immediately proceed to deposit funds
+      if (autoDeposit) {
+        await handleDepositFunds(paymentId, amount);
+      }
+
       // Setup next payment ID
       setFormData({
         paymentId: `pay_${Math.floor(1000 + Math.random() * 9000)}`,
@@ -386,33 +397,93 @@ function App() {
 
             {view === "student" ? (
               <div className="dashboard-grid">
-                {/* Onboarding / Create Payment */}
+                {/* Onboarding / Create / Deposit Payment */}
                 <div className="glass-panel" style={{ padding: "2rem" }}>
-                  <div className="card-title-section">
-                    <h3>Create New Escrow Tuition Payment</h3>
+                  <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", borderBottom: "1px solid var(--border-glass)", paddingBottom: "1rem" }}>
+                    <button
+                      type="button"
+                      className={`btn ${activeFormTab === "create" ? "btn-primary" : "btn-secondary"}`}
+                      style={{ flex: 1, padding: "0.5rem" }}
+                      onClick={() => setActiveFormTab("create")}
+                    >
+                      1. Create & Pay Escrow
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn ${activeFormTab === "deposit" ? "btn-primary" : "btn-secondary"}`}
+                      style={{ flex: 1, padding: "0.5rem" }}
+                      onClick={() => setActiveFormTab("deposit")}
+                    >
+                      2. Direct Deposit Funds
+                    </button>
                   </div>
-                  <form onSubmit={handleCreatePayment}>
-                    <div className="form-group">
-                      <label className="form-label">Payment Reference Symbol</label>
-                      <input className="form-input" type="text" value={formData.paymentId} readOnly required />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">University Wallet Address</label>
-                      <div style={{ display: "flex", gap: "0.5rem" }}>
-                        <input className="form-input" style={{ flex: 1 }} type="text" placeholder="G..." value={formData.universityAddress} onChange={(e) => setFormData({ ...formData, universityAddress: e.target.value })} />
-                        <button className="btn btn-secondary" type="button" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }} onClick={() => setFormData({ ...formData, universityAddress: DEMO_UNIVERSITY })}>Use Demo Uni</button>
+
+                  {activeFormTab === "create" ? (
+                    <form onSubmit={handleCreatePayment}>
+                      <div className="form-group">
+                        <label className="form-label">Payment Reference Symbol</label>
+                        <input className="form-input" type="text" value={formData.paymentId} readOnly required />
                       </div>
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Amount (in XLM)</label>
-                      <input className="form-input" type="number" placeholder="e.g. 100" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Academic Term</label>
-                      <input className="form-input" type="text" value={formData.term} onChange={(e) => setFormData({ ...formData, term: e.target.value })} required />
-                    </div>
-                    <button className="btn btn-primary" type="submit">Create Escrow Record</button>
-                  </form>
+                      <div className="form-group">
+                        <label className="form-label">University Wallet Address</label>
+                        <div style={{ display: "flex", gap: "0.5rem" }}>
+                          <input className="form-input" style={{ flex: 1 }} type="text" placeholder="G..." value={formData.universityAddress} onChange={(e) => setFormData({ ...formData, universityAddress: e.target.value })} />
+                          <button className="btn btn-secondary" type="button" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }} onClick={() => setFormData({ ...formData, universityAddress: DEMO_UNIVERSITY })}>Use Demo Uni</button>
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Amount (in XLM)</label>
+                        <input className="form-input" type="number" placeholder="e.g. 50" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Academic Term</label>
+                        <input className="form-input" type="text" value={formData.term} onChange={(e) => setFormData({ ...formData, term: e.target.value })} required />
+                      </div>
+                      <div className="form-group" style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.5rem" }}>
+                        <input type="checkbox" id="autoDepositCheck" checked={autoDeposit} onChange={(e) => setAutoDeposit(e.target.checked)} />
+                        <label htmlFor="autoDepositCheck" style={{ fontSize: "0.85rem", cursor: "pointer", color: "var(--text-primary)" }}>
+                          <strong>Auto-Deposit:</strong> Automatically transfer XLM into escrow right after creation
+                        </label>
+                      </div>
+                      <button className="btn btn-primary" style={{ width: "100%", marginTop: "1rem" }} type="submit">
+                        {autoDeposit ? "Create & Deposit XLM into Escrow" : "Create Escrow Record Only"}
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!directDepositId || !directDepositAmount) return;
+                      await handleDepositFunds(directDepositId, directDepositAmount);
+                      setDirectDepositId("");
+                      setDirectDepositAmount("");
+                    }}>
+                      <div className="form-group">
+                        <label className="form-label">Payment ID (e.g. pay_1446)</label>
+                        <input
+                          className="form-input"
+                          type="text"
+                          placeholder="pay_..."
+                          value={directDepositId}
+                          onChange={(e) => setDirectDepositId(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Deposit Amount (in XLM)</label>
+                        <input
+                          className="form-input"
+                          type="number"
+                          placeholder="e.g. 50"
+                          value={directDepositAmount}
+                          onChange={(e) => setDirectDepositAmount(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <button className="btn btn-success" style={{ width: "100%", marginTop: "1rem" }} type="submit">
+                        Deposit XLM into Smart Contract Escrow
+                      </button>
+                    </form>
+                  )}
                 </div>
 
                 {/* List payments */}
