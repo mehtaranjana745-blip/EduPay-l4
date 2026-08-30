@@ -132,4 +132,75 @@ impl EduPayEscrow {
             (record.student.clone(), amount),
         );
     }
+
+    pub fn release_payment(env: Env, payment_id: Symbol, caller: Address) {
+        caller.require_auth();
+
+        let payment_key = DataKey::Payment(payment_id.clone());
+        let mut record: PaymentRecord = env
+            .storage()
+            .persistent()
+            .get(&payment_key)
+            .expect("payment does not exist");
+
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).expect("not initialized");
+
+        if caller != admin && caller != record.university {
+            panic!("unauthorized caller");
+        }
+
+        if record.status != PaymentStatus::Escrowed {
+            panic!("payment is not in Escrowed state");
+        }
+
+        // Get token client
+        let token_address = Self::get_token(env.clone());
+        let token_client = token::Client::new(&env, &token_address);
+
+        // Transfer funds from contract to university
+        token_client.transfer(&env.current_contract_address(), &record.university, &record.amount);
+
+        // Update status to Released
+        record.status = PaymentStatus::Released;
+        env.storage().persistent().set(&payment_key, &record);
+
+        // Emit PaymentReleased event
+        env.events().publish(
+            (Symbol::new(&env, "PaymentReleased"), payment_id),
+            (record.university.clone(), record.amount),
+        );
+    }
+
+    pub fn refund(env: Env, payment_id: Symbol) {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).expect("not initialized");
+        admin.require_auth();
+
+        let payment_key = DataKey::Payment(payment_id.clone());
+        let mut record: PaymentRecord = env
+            .storage()
+            .persistent()
+            .get(&payment_key)
+            .expect("payment does not exist");
+
+        if record.status != PaymentStatus::Escrowed {
+            panic!("payment is not in Escrowed state");
+        }
+
+        // Get token client
+        let token_address = Self::get_token(env.clone());
+        let token_client = token::Client::new(&env, &token_address);
+
+        // Transfer funds from contract back to student
+        token_client.transfer(&env.current_contract_address(), &record.student, &record.amount);
+
+        // Update status to Refunded
+        record.status = PaymentStatus::Refunded;
+        env.storage().persistent().set(&payment_key, &record);
+
+        // Emit PaymentRefunded event
+        env.events().publish(
+            (Symbol::new(&env, "PaymentRefunded"), payment_id),
+            (record.student.clone(), record.amount),
+        );
+    }
 }
