@@ -6,6 +6,24 @@ EduPay is a production-ready decentralized cross-border tuition fee escrow platf
 
 ---
 
+## 📋 Level 5 Requirements & Submission Checklist
+
+| # | Requirement | Status | Proof / Artifact Link |
+|---|---|:---:|---|
+| 1 | **Live Deployed Frontend Web App** | ✅ **DONE** | [edu-pay-l4.vercel.app](https://edu-pay-l4.vercel.app/) |
+| 2 | **Deployed Soroban Escrow Smart Contract** | ✅ **DONE** | [`CA36B6...`](https://stellar.expert/explorer/testnet/contract/CA36B6GWEQKEFMYQR73HKEIBJPWSHH4TGO3VPBJ5PMVY4VK6WAIGBU3S) |
+| 3 | **Smart Contract Automated Unit Tests** | ✅ **DONE** | 3 passing unit tests in [`contracts/escrow/src/test.rs`](./contracts/escrow/src/test.rs) |
+| 4 | **Working Demo Video (Full Flow)** | ✅ **DONE** | [Watch Demo Video](https://photos.app.goo.gl/3KumqSYYd6D9uR9m6) |
+| 5 | **Pitch Deck & Presentation** | ✅ **DONE** | [Pitch Deck / Demo Video](https://photos.app.goo.gl/3KumqSYYd6D9uR9m6) |
+| 6 | **50+ Real User Onboarding** | ✅ **DONE** | **73 Unique Users** ([`users_testnet_73.csv`](./users_testnet_73.csv)) |
+| 7 | **User Feedback Survey & Response Sheet** | ✅ **DONE** | [Feedback Sheet](https://docs.google.com/spreadsheets/d/16N1H6TOISQ1p0tvwBxnVUIedQOKXRBvzGxEjeM8vOE4/edit?usp=sharing) & [Google Form](https://docs.google.com/forms/d/1YlTWD3d9XNmsSQxapl0-B5Mebk6TbWkaX5bvBFEllsU/edit) |
+| 8 | **Real On-Chain Transaction Activity** | ✅ **DONE** | Verified hashes (e.g. [`c22e6feb...`](https://stellar.expert/explorer/testnet/tx/c22e6febf9a52fa68e14a8be514b277c587dfa869421062df2033161e0f6e4b5)) on Stellar.Expert |
+| 9 | **Feedback-Driven Iterations & Fixes** | ✅ **DONE** | 4 major fixes with Git commits ([`9bd8e6d`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/9bd8e6d), [`c6ec494`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c6ec494), [`06dad17`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/06dad17), [`c1df804`](https://github.com/mehtaranjana745-blip/EduPay-l4/commit/c1df804)) |
+| 10 | **20+ Meaningful Git Commits** | ✅ **DONE** | **25+ Commits** ([GitHub Commit History](https://github.com/mehtaranjana745-blip/EduPay-l4/commits/main)) |
+| 11 | **User Telemetry & Error Tracking** | ✅ **DONE** | Integrated PostHog & Sentry in frontend code |
+
+---
+
 ## 🚀 Deployed Details & Live Links
 
 - **Live Web Application:** [https://edu-pay-l4.vercel.app/](https://edu-pay-l4.vercel.app/)
