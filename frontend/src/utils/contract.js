@@ -4,6 +4,9 @@ export const CONTRACT_ID = "CA36B6GWEQKEFMYQR73HKEIBJPWSHH4TGO3VPBJ5PMVY4VK6WAIG
 const RPC_URL = "https://soroban-testnet.stellar.org";
 const rpcServer = new rpc.Server(RPC_URL);
 
+// Valid query account on testnet for read-only simulation
+const VALID_QUERY_ACCOUNT = "GDOAIC67A264QG5W5KPUPIWHANCOQBXYHI6DD6BGAO2WC6BWGC4YI35J";
+
 // Stellar Native Asset (XLM) uses 7 decimal places (1 XLM = 10,000,000 stroops)
 export const STROOPS_PER_XLM = 10000000;
 
@@ -22,7 +25,7 @@ export const createPaymentTx = async (studentAddress, paymentId, universityAddre
   const contract = new Contract(CONTRACT_ID);
   const studentAcc = await rpcServer.getAccount(studentAddress);
   
-  // Convert XLM to stroops (7 decimals) so real XLM tokens are transferred on-chain
+  // Convert XLM to stroops (7 decimals)
   const amountStroops = BigInt(Math.floor(Number(amountXlm || 0) * STROOPS_PER_XLM));
 
   const paymentIdVal = xdr.ScVal.scvSymbol(paymentId);
@@ -53,7 +56,6 @@ export const depositPaymentTx = async (studentAddress, paymentId, amount) => {
   const contract = new Contract(CONTRACT_ID);
   const studentAcc = await rpcServer.getAccount(studentAddress);
 
-  // If amount is small (e.g. 50), convert to stroops; if already large, use as is
   let amountStroops;
   if (Number(amount) < 1000000) {
     amountStroops = BigInt(Math.floor(Number(amount) * STROOPS_PER_XLM));
@@ -74,7 +76,7 @@ export const depositPaymentTx = async (studentAddress, paymentId, amount) => {
 
   const simulated = await rpcServer.simulateTransaction(tx);
   if (rpc.Api.isSimulationError(simulated)) {
-    // If stroops failed, try raw units fallback
+    // Fallback with raw unit if stroops simulation failed
     const rawVal = toI128ScVal(Math.floor(Number(amount)));
     const txFallback = new TransactionBuilder(studentAcc, {
       fee: "1000",
@@ -170,12 +172,12 @@ export const submitTx = async (signedXdr) => {
 // Fetch a single on-chain payment record directly by its unique payment ID
 export const getPaymentRecord = async (paymentId) => {
   try {
-    const dummyAccount = new Account("GBGMRORX4H7WOHPH2PBY2GXP7Z7PHX6Y3W56WQQNZMX4N5Q5W6XQ5AFJ", "0");
+    const dummyAccount = new Account(VALID_QUERY_ACCOUNT, "0");
     const contract = new Contract(CONTRACT_ID);
     const paymentIdVal = xdr.ScVal.scvSymbol(paymentId);
 
     const tx = new TransactionBuilder(dummyAccount, {
-      fee: "100",
+      fee: "1000",
       networkPassphrase: Networks.TESTNET
     })
     .addOperation(contract.call("get_payment_record", paymentIdVal))
@@ -212,16 +214,56 @@ export const getPaymentRecord = async (paymentId) => {
 // Read payment history for a user / admin
 export const getAllPaymentsForUser = async (userAddress, knownIds = [], isAdmin = false) => {
   try {
-    const defaultIds = ["pay_7741", "pay_1446", "pay_u01_4473", "pay_u02_9676", "pay_u03_2454"];
-    const uniqueIds = new Set([...knownIds, ...defaultIds]);
     const results = [];
 
-    // Query on-chain record for each known payment ID
+    // 1. Direct on-chain query for all payments associated with this user
+    try {
+      const dummyAccount = new Account(VALID_QUERY_ACCOUNT, "0");
+      const contract = new Contract(CONTRACT_ID);
+      const userVal = Address.fromString(userAddress).toScVal();
+
+      const tx = new TransactionBuilder(dummyAccount, {
+        fee: "1000",
+        networkPassphrase: Networks.TESTNET
+      })
+      .addOperation(contract.call("get_all_payments_for_user", userVal))
+      .setTimeout(30)
+      .build();
+
+      const simulated = await rpcServer.simulateTransaction(tx);
+      if (!rpc.Api.isSimulationError(simulated) && simulated.result?.retval) {
+        const nativeArray = scValToNative(simulated.result.retval);
+        const statusMap = ["Deposited", "Escrowed", "Released", "Refunded"];
+        nativeArray.forEach((record, index) => {
+          const rawAmt = Number(record.amount);
+          const displayAmt = rawAmt >= STROOPS_PER_XLM ? (rawAmt / STROOPS_PER_XLM) : rawAmt;
+          results.push({
+            id: `pay_${index + 1}`,
+            student: record.student,
+            university: record.university,
+            rawAmount: rawAmt,
+            amount: displayAmt,
+            term: record.term,
+            status: statusMap[record.status] || "Unknown"
+          });
+        });
+      }
+    } catch (e) {
+      console.warn("Direct contract query warning:", e);
+    }
+
+    // 2. Query known payment IDs for exact IDs and statuses
+    const defaultIds = ["pay_7741", "pay_1446", "pay_u01_4473", "pay_u02_9676", "pay_u03_2454"];
+    const uniqueIds = new Set([...knownIds, ...defaultIds]);
     for (const pid of uniqueIds) {
       const rec = await getPaymentRecord(pid);
       if (rec) {
         if (isAdmin || rec.student === userAddress || rec.university === userAddress) {
-          if (!results.some(r => r.id === rec.id)) {
+          const existingIdx = results.findIndex(r => r.student === rec.student && r.amount === rec.amount && r.term === rec.term);
+          if (existingIdx !== -1) {
+            results[existingIdx].id = rec.id;
+            results[existingIdx].status = rec.status;
+          } else if (!results.some(r => r.id === rec.id)) {
             results.push(rec);
           }
         }
