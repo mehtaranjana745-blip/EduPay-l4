@@ -1,8 +1,17 @@
-import { Account, Address, Contract, Networks, TransactionBuilder, rpc, nativeToScVal, scValToNative, xdr } from "@stellar/stellar-sdk";
+import { Account, Address, Contract, Networks, TransactionBuilder, rpc, scValToNative, xdr } from "@stellar/stellar-sdk";
 
 export const CONTRACT_ID = "CA36B6GWEQKEFMYQR73HKEIBJPWSHH4TGO3VPBJ5PMVY4VK6WAIGBU3S";
 const RPC_URL = "https://soroban-testnet.stellar.org";
 const rpcServer = new rpc.Server(RPC_URL);
+
+export function toI128ScVal(amount) {
+  return xdr.ScVal.scvI128(
+    new xdr.Int128Parts({
+      lo: xdr.Uint64.fromString(amount.toString()),
+      hi: xdr.Int64.fromString("0")
+    })
+  );
+}
 
 // Build, simulate, and prepare a create_payment transaction
 export const createPaymentTx = async (studentAddress, paymentId, universityAddress, amount, term) => {
@@ -12,7 +21,7 @@ export const createPaymentTx = async (studentAddress, paymentId, universityAddre
   const paymentIdVal = xdr.ScVal.scvSymbol(paymentId);
   const studentVal = Address.fromString(studentAddress).toScVal();
   const universityVal = Address.fromString(universityAddress).toScVal();
-  const amountVal = nativeToScVal(BigInt(amount));
+  const amountVal = toI128ScVal(amount);
   const termVal = xdr.ScVal.scvString(term);
 
   const tx = new TransactionBuilder(studentAcc, {
@@ -20,7 +29,7 @@ export const createPaymentTx = async (studentAddress, paymentId, universityAddre
     networkPassphrase: Networks.TESTNET
   })
   .addOperation(contract.call("create_payment", paymentIdVal, studentVal, universityVal, amountVal, termVal))
-  .setTimeout(30)
+  .setTimeout(60)
   .build();
 
   const simulated = await rpcServer.simulateTransaction(tx);
@@ -28,7 +37,8 @@ export const createPaymentTx = async (studentAddress, paymentId, universityAddre
     throw new Error(`Simulation failed: ${simulated.error}`);
   }
 
-  return rpcServer.prepareTransaction(tx, simulated).toXDR();
+  const prep = rpc.assembleTransaction(tx, simulated).build();
+  return prep.toXDR();
 };
 
 // Build, simulate, and prepare a deposit transaction
@@ -37,14 +47,14 @@ export const depositPaymentTx = async (studentAddress, paymentId, amount) => {
   const studentAcc = await rpcServer.getAccount(studentAddress);
 
   const paymentIdVal = xdr.ScVal.scvSymbol(paymentId);
-  const amountVal = nativeToScVal(BigInt(amount));
+  const amountVal = toI128ScVal(amount);
 
   const tx = new TransactionBuilder(studentAcc, {
     fee: "1000",
     networkPassphrase: Networks.TESTNET
   })
   .addOperation(contract.call("deposit", paymentIdVal, amountVal))
-  .setTimeout(30)
+  .setTimeout(60)
   .build();
 
   const simulated = await rpcServer.simulateTransaction(tx);
@@ -52,7 +62,8 @@ export const depositPaymentTx = async (studentAddress, paymentId, amount) => {
     throw new Error(`Simulation failed: ${simulated.error}`);
   }
 
-  return rpcServer.prepareTransaction(tx, simulated).toXDR();
+  const prep = rpc.assembleTransaction(tx, simulated).build();
+  return prep.toXDR();
 };
 
 // Build, simulate, and prepare a release_payment transaction
@@ -68,7 +79,7 @@ export const releasePaymentTx = async (callerAddress, paymentId) => {
     networkPassphrase: Networks.TESTNET
   })
   .addOperation(contract.call("release_payment", paymentIdVal, callerVal))
-  .setTimeout(30)
+  .setTimeout(60)
   .build();
 
   const simulated = await rpcServer.simulateTransaction(tx);
@@ -76,7 +87,8 @@ export const releasePaymentTx = async (callerAddress, paymentId) => {
     throw new Error(`Simulation failed: ${simulated.error}`);
   }
 
-  return rpcServer.prepareTransaction(tx, simulated).toXDR();
+  const prep = rpc.assembleTransaction(tx, simulated).build();
+  return prep.toXDR();
 };
 
 // Build, simulate, and prepare a refund transaction
@@ -91,7 +103,7 @@ export const refundPaymentTx = async (adminAddress, paymentId) => {
     networkPassphrase: Networks.TESTNET
   })
   .addOperation(contract.call("refund", paymentIdVal))
-  .setTimeout(30)
+  .setTimeout(60)
   .build();
 
   const simulated = await rpcServer.simulateTransaction(tx);
@@ -99,7 +111,8 @@ export const refundPaymentTx = async (adminAddress, paymentId) => {
     throw new Error(`Simulation failed: ${simulated.error}`);
   }
 
-  return rpcServer.prepareTransaction(tx, simulated).toXDR();
+  const prep = rpc.assembleTransaction(tx, simulated).build();
+  return prep.toXDR();
 };
 
 // Submit signed transaction XDR to network and poll for success/failure
@@ -112,7 +125,7 @@ export const submitTx = async (signedXdr) => {
   }
 
   const txHash = response.hash;
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 30; i++) {
     const statusResponse = await rpcServer.getTransaction(txHash);
     if (statusResponse.status === "SUCCESS") {
       return { hash: txHash, result: statusResponse };
@@ -148,7 +161,7 @@ export const getAllPaymentsForUser = async (userAddress) => {
     if (simulated.result?.retval) {
       const nativeArray = scValToNative(simulated.result.retval);
       return nativeArray.map((record, index) => ({
-        id: `pay_${index}`, // fallback ID
+        id: `pay_${index}`,
         student: record.student,
         university: record.university,
         amount: Number(record.amount),
@@ -160,43 +173,5 @@ export const getAllPaymentsForUser = async (userAddress) => {
   } catch (error) {
     console.error("Error fetching payments list:", error);
     return [];
-  }
-};
-
-// Read a single payment record by paymentId
-export const getPaymentRecord = async (paymentId) => {
-  try {
-    const dummyAccount = new Account("GBGMRORX4H7WOHPH2PBY2GXP7Z7PHX6Y3W56WQQNZMX4N5Q5W6XQ5AFJ", "0");
-    const contract = new Contract(CONTRACT_ID);
-    const paymentIdVal = xdr.ScVal.scvSymbol(paymentId);
-
-    const tx = new TransactionBuilder(dummyAccount, {
-      fee: "100",
-      networkPassphrase: Networks.TESTNET
-    })
-    .addOperation(contract.call("get_payment_record", paymentIdVal))
-    .setTimeout(30)
-    .build();
-
-    const simulated = await rpcServer.simulateTransaction(tx);
-    if (rpc.Api.isSimulationError(simulated)) {
-      return null;
-    }
-
-    if (simulated.result?.retval) {
-      const record = scValToNative(simulated.result.retval);
-      return {
-        id: paymentId,
-        student: record.student,
-        university: record.university,
-        amount: Number(record.amount),
-        term: record.term,
-        status: ["Deposited", "Escrowed", "Released", "Refunded"][record.status] || "Unknown"
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error("Error fetching single payment record:", error);
-    return null;
   }
 };
