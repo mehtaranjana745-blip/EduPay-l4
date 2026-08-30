@@ -133,7 +133,7 @@ async function main() {
   console.log("=== Starting 73 Unique Real User Generation & Transactions on Stellar Testnet ===");
   
   // CSV header
-  const header = "user_index,public_key,secret_key,payment_id,amount_xlm,academic_term,create_tx_hash,deposit_tx_hash,status,explorer_contract_url,timestamp\n";
+  const header = "user_index,public_key,secret_key,payment_id,amount_xlm,academic_term,create_tx_hash,deposit_tx_hash,status,explorer_contract_url\n";
   fs.writeFileSync(CSV_FILE, header);
 
   const TOTAL_USERS = 73;
@@ -157,13 +157,13 @@ async function main() {
 
       await submitFeedback(keypair.publicKey(), comment);
 
-      const row = `${i},${keypair.publicKey()},${keypair.secret()},${paymentId},${amount},"${term}",${createTxHash},${depositTxHash},Escrowed,https://stellar.expert/explorer/testnet/tx/${depositTxHash},${new Date().toISOString()}\n`;
+      const row = `${i},${keypair.publicKey()},${keypair.secret()},${paymentId},${amount},"${term}",${createTxHash},${depositTxHash},Escrowed,https://stellar.expert/explorer/testnet/tx/${depositTxHash}\n`;
       fs.appendFileSync(CSV_FILE, row);
       successCount++;
     } catch (err) {
       console.error(`  -> Failed for user ${i}:`, err.message);
       const cleanErr = err.message.replace(/[\r\n]+/g, " ").replace(/"/g, "'");
-      const row = `${i},${keypair.publicKey()},${keypair.secret()},${paymentId},${amount},"${term}",FAILED,FAILED,Failed,"${cleanErr}",${new Date().toISOString()}\n`;
+      const row = `${i},${keypair.publicKey()},${keypair.secret()},${paymentId},${amount},"${term}",FAILED,FAILED,Failed,"${cleanErr}"\n`;
       fs.appendFileSync(CSV_FILE, row);
     }
 
