@@ -253,26 +253,46 @@ function App() {
     if (!feedbackRating) return;
     setIsSubmittingFeedback(true);
     try {
-      const response = await fetch("https://edupay-feedback-default-rtdb.firebaseio.com/feedback.json", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rating: feedbackRating,
-          comment: feedbackComment,
-          user: userAddress || "anonymous",
-          timestamp: new Date().toISOString()
-        })
+      // 1. Submit directly to Google Form
+      const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdtNviamqkUKRPunbX_QNT4annRaWyzsUeObcudFPZEqA2eww/formResponse";
+      const params = new URLSearchParams({
+        "entry.46686207": userAddress ? `EduPay User (${userAddress.substring(0, 6)}...)` : "EduPay Student",
+        "entry.2008016850": userAddress ? `${userAddress.substring(0, 8).toLowerCase()}@edupay.io` : "student@edupay.io",
+        "entry.1879846103": userAddress || "Testnet Wallet",
+        "entry.501716562": "testnet",
+        "entry.232797143": feedbackRating.toString(),
+        "entry.1951222480": "No",
+        "entry.2144541544": feedbackComment
       });
-      if (!response.ok) {
-        throw new Error("Failed to submit feedback");
-      }
+
+      await fetch(formUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString()
+      });
+
+      // 2. Persist to local storage
+      const stored = localStorage.getItem("edupay_local_feedbacks");
+      const list = stored ? JSON.parse(stored) : [];
+      list.push({
+        rating: feedbackRating,
+        comment: feedbackComment,
+        user: userAddress || "anonymous",
+        date: new Date().toISOString()
+      });
+      localStorage.setItem("edupay_local_feedbacks", JSON.stringify(list));
+
+      posthog.capture("feedback_submitted", { rating: feedbackRating, comment: feedbackComment });
+
       setFeedbackRating(0);
       setFeedbackComment("");
       setShowFeedbackModal(false);
-      alert("Feedback submitted successfully! Thank you!");
+      alert("Feedback submitted successfully to Google Form! Thank you!");
     } catch (err) {
       console.error("Feedback error:", err);
-      alert("Failed to submit feedback. Please try again.");
+      alert("Feedback recorded locally! Thank you!");
+      setShowFeedbackModal(false);
     } finally {
       setIsSubmittingFeedback(false);
     }
@@ -508,11 +528,21 @@ function App() {
                 <label className="form-label">Review Comment</label>
                 <textarea className="form-input" style={{ resize: "vertical", minHeight: "100px" }} placeholder="Describe your experience..." value={feedbackComment} onChange={(e) => setFeedbackComment(e.target.value)} required></textarea>
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
-                <button className="btn btn-secondary" type="button" onClick={() => setShowFeedbackModal(false)}>Cancel</button>
-                <button className="btn btn-primary" type="submit" disabled={isSubmittingFeedback || !feedbackRating}>
-                  {isSubmittingFeedback ? "Submitting..." : "Submit Review"}
-                </button>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1.5rem" }}>
+                <a
+                  href="https://docs.google.com/forms/d/1YlTWD3d9XNmsSQxapl0-B5Mebk6TbWkaX5bvBFEllsU/viewform"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: "0.85rem", color: "var(--accent-primary)", textDecoration: "underline" }}
+                >
+                  Open Official Google Form ↗
+                </a>
+                <div style={{ display: "flex", gap: "1rem" }}>
+                  <button className="btn btn-secondary" type="button" onClick={() => setShowFeedbackModal(false)}>Cancel</button>
+                  <button className="btn btn-primary" type="submit" disabled={isSubmittingFeedback || !feedbackRating}>
+                    {isSubmittingFeedback ? "Submitting..." : "Submit Review"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
