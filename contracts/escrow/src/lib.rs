@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Symbol, String, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, token, Address, Env, Symbol, String, Vec};
 
 #[contracttype]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -95,5 +95,41 @@ impl EduPayEscrow {
             .unwrap_or(Vec::new(&env));
         uni_payments.push_back(payment_id);
         env.storage().persistent().set(&uni_key, &uni_payments);
+    }
+
+    pub fn deposit(env: Env, payment_id: Symbol, amount: i128) {
+        let payment_key = DataKey::Payment(payment_id.clone());
+        let mut record: PaymentRecord = env
+            .storage()
+            .persistent()
+            .get(&payment_key)
+            .expect("payment does not exist");
+
+        if record.status != PaymentStatus::Deposited {
+            panic!("payment is not in Deposited state");
+        }
+
+        if amount != record.amount {
+            panic!("incorrect deposit amount");
+        }
+
+        record.student.require_auth();
+
+        // Get the token client
+        let token_address = Self::get_token(env.clone());
+        let token_client = token::Client::new(&env, &token_address);
+
+        // Transfer funds from student to this contract
+        token_client.transfer(&record.student, &env.current_contract_address(), &amount);
+
+        // Update status to Escrowed
+        record.status = PaymentStatus::Escrowed;
+        env.storage().persistent().set(&payment_key, &record);
+
+        // Emit PaymentEscrowed event
+        env.events().publish(
+            (Symbol::new(&env, "PaymentEscrowed"), payment_id),
+            (record.student.clone(), amount),
+        );
     }
 }
