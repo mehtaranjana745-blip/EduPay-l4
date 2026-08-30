@@ -61,10 +61,10 @@ function App() {
     if (userAddress) {
       reloadBalance();
       loadPayments();
-      // Poll for payment status updates every 8 seconds
+      // Poll for active payment status updates from the contract state every 7 seconds
       const interval = setInterval(() => {
         loadPayments();
-      }, 8000);
+      }, 7000);
       return () => clearInterval(interval);
     } else {
       setBalance(0);
