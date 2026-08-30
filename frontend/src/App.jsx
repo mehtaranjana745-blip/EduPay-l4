@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { initWalletKit, connectWallet, disconnectWallet, signTx } from "./utils/wallet";
 import { fundAccount, checkBalance } from "./utils/stellar";
 import { createPaymentTx, depositPaymentTx, releasePaymentTx, refundPaymentTx, submitTx, getAllPaymentsForUser } from "./utils/contract";
+import { Footer } from "./components/Footer";
+import { FeeCalculator } from "./components/FeeCalculator";
+import { FaqModal } from "./components/FaqModal";
 import posthog from "posthog-js";
 import * as Sentry from "@sentry/react";
 import "./App.css";
@@ -534,6 +537,10 @@ function App() {
                     )}
                   </div>
                 </div>
+
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <FeeCalculator />
+                </div>
               </div>
             ) : (
               /* Admin Portal View */
@@ -592,8 +599,17 @@ function App() {
         )}
       </main>
 
-      {/* Floating feedback button */}
-      <button className="btn btn-primary" style={{ position: "fixed", bottom: "2rem", right: "2rem", zIndex: 100 }} onClick={() => setShowFeedbackModal(true)}>Give Feedback</button>
+      {/* Floating Action Buttons */}
+      <div style={{ position: "fixed", bottom: "2rem", right: "2rem", zIndex: 100, display: "flex", gap: "0.75rem" }}>
+        <button className="btn btn-secondary" onClick={() => setShowFaqModal(true)}>📖 FAQ & Guide</button>
+        <button className="btn btn-primary" onClick={() => setShowFeedbackModal(true)}>💬 Feedback</button>
+      </div>
+
+      {/* FAQ Modal */}
+      <FaqModal isOpen={showFaqModal} onClose={() => setShowFaqModal(false)} />
+
+      {/* Footer */}
+      <Footer />
 
       {/* Feedback Modal */}
       {showFeedbackModal && (
