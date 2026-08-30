@@ -242,3 +242,6 @@ impl EduPayEscrow {
         records
     }
 }
+
+#[cfg(test)]
+mod test;
