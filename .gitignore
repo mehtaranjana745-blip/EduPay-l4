@@ -3,3 +3,7 @@ node_modules/
 dist/
 build/
 .DS_Store
+*.js.map
+generate_and_transact*.js
+test_*.js
+scripts/

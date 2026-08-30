@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Automation scripts
+generate_and_transact*.js
+test_*.js
