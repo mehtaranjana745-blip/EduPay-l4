@@ -13,7 +13,7 @@ EduPay is a production-ready MVP for a cross-border tuition fee payment platform
 - **Stellar Explorer Link:**  
   [Stellar.Expert Testnet](https://stellar.expert/explorer/testnet/contract/CA36B6GWEQKEFMYQR73HKEIBJPWSHH4TGO3VPBJ5PMVY4VK6WAIGBU3S)
 - **Live Frontend URL:**  
-  `https://edupay-l4.vercel.app` (Deployment pending)
+  [https://edu-pay-l4.vercel.app/](https://edu-pay-l4.vercel.app/)
 
 ---
 
