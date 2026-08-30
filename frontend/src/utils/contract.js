@@ -5,9 +5,10 @@ const RPC_URL = "https://soroban-testnet.stellar.org";
 const rpcServer = new rpc.Server(RPC_URL);
 
 export function toI128ScVal(amount) {
+  const cleanInt = Math.floor(Number(amount || 0));
   return xdr.ScVal.scvI128(
     new xdr.Int128Parts({
-      lo: xdr.Uint64.fromString(amount.toString()),
+      lo: xdr.Uint64.fromString(cleanInt.toString()),
       hi: xdr.Int64.fromString("0")
     })
   );
