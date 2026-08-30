@@ -138,39 +138,94 @@ export const submitTx = async (signedXdr) => {
   throw new Error("Transaction confirmation timeout");
 };
 
-// Read payment history for a user
-export const getAllPaymentsForUser = async (userAddress) => {
+// Fetch a single on-chain payment record directly by its unique payment ID
+export const getPaymentRecord = async (paymentId) => {
   try {
     const dummyAccount = new Account("GBGMRORX4H7WOHPH2PBY2GXP7Z7PHX6Y3W56WQQNZMX4N5Q5W6XQ5AFJ", "0");
     const contract = new Contract(CONTRACT_ID);
-    const userVal = Address.fromString(userAddress).toScVal();
+    const paymentIdVal = xdr.ScVal.scvSymbol(paymentId);
 
     const tx = new TransactionBuilder(dummyAccount, {
       fee: "100",
       networkPassphrase: Networks.TESTNET
     })
-    .addOperation(contract.call("get_all_payments_for_user", userVal))
+    .addOperation(contract.call("get_payment_record", paymentIdVal))
     .setTimeout(30)
     .build();
 
     const simulated = await rpcServer.simulateTransaction(tx);
     if (rpc.Api.isSimulationError(simulated)) {
-      console.warn("Read-only simulation error:", simulated.error);
-      return [];
+      return null;
     }
 
     if (simulated.result?.retval) {
-      const nativeArray = scValToNative(simulated.result.retval);
-      return nativeArray.map((record, index) => ({
-        id: `pay_${index}`,
+      const record = scValToNative(simulated.result.retval);
+      const statusMap = ["Deposited", "Escrowed", "Released", "Refunded"];
+      return {
+        id: paymentId,
         student: record.student,
         university: record.university,
         amount: Number(record.amount),
         term: record.term,
-        status: ["Deposited", "Escrowed", "Released", "Refunded"][record.status] || "Unknown"
-      }));
+        status: statusMap[record.status] || "Unknown"
+      };
     }
-    return [];
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
+// Read payment history for a user
+export const getAllPaymentsForUser = async (userAddress, knownIds = []) => {
+  try {
+    const uniqueIds = new Set(knownIds);
+    const results = [];
+
+    // Query on-chain record for each known payment ID
+    for (const pid of uniqueIds) {
+      const rec = await getPaymentRecord(pid);
+      if (rec && (rec.student === userAddress || rec.university === userAddress)) {
+        results.push(rec);
+      }
+    }
+
+    // Also attempt contract get_all_payments_for_user
+    try {
+      const dummyAccount = new Account("GBGMRORX4H7WOHPH2PBY2GXP7Z7PHX6Y3W56WQQNZMX4N5Q5W6XQ5AFJ", "0");
+      const contract = new Contract(CONTRACT_ID);
+      const userVal = Address.fromString(userAddress).toScVal();
+
+      const tx = new TransactionBuilder(dummyAccount, {
+        fee: "100",
+        networkPassphrase: Networks.TESTNET
+      })
+      .addOperation(contract.call("get_all_payments_for_user", userVal))
+      .setTimeout(30)
+      .build();
+
+      const simulated = await rpcServer.simulateTransaction(tx);
+      if (!rpc.Api.isSimulationError(simulated) && simulated.result?.retval) {
+        const nativeArray = scValToNative(simulated.result.retval);
+        nativeArray.forEach((record, index) => {
+          // If not already included
+          if (!results.some(r => r.student === record.student && r.amount === Number(record.amount) && r.term === record.term)) {
+            results.push({
+              id: `pay_${index + 1}`,
+              student: record.student,
+              university: record.university,
+              amount: Number(record.amount),
+              term: record.term,
+              status: ["Deposited", "Escrowed", "Released", "Refunded"][record.status] || "Unknown"
+            });
+          }
+        });
+      }
+    } catch (e) {
+      // Non-blocking
+    }
+
+    return results;
   } catch (error) {
     console.error("Error fetching payments list:", error);
     return [];

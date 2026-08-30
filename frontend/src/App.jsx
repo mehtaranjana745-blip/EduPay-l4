@@ -87,7 +87,9 @@ function App() {
     if (!userAddress) return;
     setIsLoadingPayments(true);
     try {
-      const list = await getAllPaymentsForUser(userAddress);
+      const stored = localStorage.getItem(`edupay_ids_${userAddress}`);
+      const knownIds = stored ? JSON.parse(stored) : [];
+      const list = await getAllPaymentsForUser(userAddress, knownIds);
       setPayments(list);
     } catch (err) {
       console.error("Failed to load payments:", err);
@@ -150,6 +152,14 @@ function App() {
       
       setTxStatus({ step: "create", status: "submitting", hash: "", error: "" });
       const { hash } = await submitTx(signedXdr);
+
+      // Save payment ID to local list
+      const stored = localStorage.getItem(`edupay_ids_${userAddress}`);
+      const list = stored ? JSON.parse(stored) : [];
+      if (!list.includes(paymentId)) {
+        list.push(paymentId);
+        localStorage.setItem(`edupay_ids_${userAddress}`, JSON.stringify(list));
+      }
 
       posthog.capture("payment_created", { paymentId, amount, term, university: targetUni });
       setTxStatus({ step: "create", status: "success", hash, error: "" });
