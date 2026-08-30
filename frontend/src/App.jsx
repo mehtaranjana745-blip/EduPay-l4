@@ -17,6 +17,7 @@ Sentry.init({
 posthog.init("phc_zU8cI2mN9b7QxVnB4T6O5c3jF7nL1dKs9hJp4e5g6w", {
   api_host: "https://app.posthog.com",
   autocapture: false,
+  persistence: "memory",
 });
 
 function App() {
